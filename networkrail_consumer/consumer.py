@@ -1,8 +1,10 @@
 import configparser
 import json
+from collections import defaultdict
 from datetime import datetime
 import os
 from time import time
+from uuid import uuid4
 
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -41,7 +43,8 @@ consumer = KafkaConsumer(
 
 
 def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
-    service_account_info = json.load(open(KEYFILE_PATH))
+    with open(KEYFILE_PATH, "r") as key_file:
+        service_account_info = json.load(key_file)
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
 
     storage_client = storage.Client(
@@ -53,30 +56,49 @@ def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
     blob.upload_from_filename(source_file_name)
 
 
+def get_event_partitions(record: dict) -> tuple[str, str]:
+    event_ts = record.get("actual_timestamp") or record.get("planned_timestamp")
+
+    if isinstance(event_ts, str):
+        try:
+            normalized = event_ts.replace("Z", "+00:00")
+            event_dt = datetime.fromisoformat(normalized)
+            return event_dt.strftime("dt=%Y-%m-%d"), event_dt.strftime("hour=%H")
+        except ValueError:
+            pass
+
+    now = datetime.now()
+    return now.strftime("dt=%Y-%m-%d"), now.strftime("hour=%H")
+
+
 def flush_batch(batch: list[dict]):
     if not batch:
         return
 
-    now = datetime.now()
-    dt_partition = now.strftime("dt=%Y-%m-%d")
-    hour_partition = now.strftime("hour=%H")
-    timestamp = int(now.timestamp())
-
-    file_name = f"batch-{timestamp}.json"
-    source_file_name = f"data/{file_name}"
-    destination_blob_name = f"{DESTINATION_FOLDER}/{dt_partition}/{hour_partition}/{file_name}"
-
     os.makedirs("data", exist_ok=True)
-    with open(source_file_name, "w") as f:
-        for record in batch:
-            f.write(json.dumps(record) + "\n")  # NDJSON: 1 record ต่อบรรทัด
 
-    upload_to_gcs(
-        bucket_name=BUCKET_NAME,
-        source_file_name=source_file_name,
-        destination_blob_name=destination_blob_name,
-    )
-    print(f"Uploaded {len(batch)} records -> {destination_blob_name}")
+    partitioned_records: dict[tuple[str, str], list[dict]] = defaultdict(list)
+    for record in batch:
+        dt_partition, hour_partition = get_event_partitions(record)
+        partitioned_records[(dt_partition, hour_partition)].append(record)
+
+    for (dt_partition, hour_partition), records in partitioned_records.items():
+        timestamp_ms = int(time() * 1000)
+        file_name = f"batch-{timestamp_ms}-{uuid4().hex[:8]}.json"
+        source_file_name = f"data/{file_name}"
+        destination_blob_name = f"{DESTINATION_FOLDER}/{dt_partition}/{hour_partition}/{file_name}"
+
+        with open(source_file_name, "w") as file_handle:
+            for record in records:
+                file_handle.write(json.dumps(record) + "\n")  # NDJSON: 1 record ต่อบรรทัด
+
+        upload_to_gcs(
+            bucket_name=BUCKET_NAME,
+            source_file_name=source_file_name,
+            destination_blob_name=destination_blob_name,
+        )
+        print(f"Uploaded {len(records)} records -> {destination_blob_name}")
+        os.remove(source_file_name)
 
 
 batch = []
