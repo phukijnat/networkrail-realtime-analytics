@@ -338,77 +338,44 @@ services:
   #     airflow-init:
   #       condition: service_completed_successfully
 
-  spark-master:
-    image: spark-image
-    entrypoint: ['./entrypoint.sh', 'master']
-    build:
-      context: docker
-      dockerfile: Dockerfile-spark
-    ports:
-      - "4040:4040"
-      - "9090:8080"
-      - "7077:7077"
-      - "3000:3000"
-    volumes:
-      - ./pyspark:/opt/spark/pyspark
-      - ${AIRFLOW_PROJ_DIR:-.}/spark-events:/opt/spark/spark-events
-    env_file:
-      - .env.spark
+  # spark-master:
+  #   image: spark-image
+  #   entrypoint: ['./entrypoint.sh', 'master']
+  #   build:
+  #     context: docker
+  #     dockerfile: Dockerfile-spark
+  #   ports:
+  #     - "4040:4040"
+  #     - "9090:8080"
+  #     - "7077:7077"
+  #     - "3000:3000"
+  #   volumes:
+  #     - ./pyspark:/opt/spark/pyspark
+  #     - ${AIRFLOW_PROJ_DIR:-.}/spark-events:/opt/spark/spark-events
+  #   env_file:
+  #     - .env.spark
 
-  spark-history:
-    image: spark-image
-    entrypoint: ['./entrypoint.sh', 'history']
-    depends_on:
-      - spark-master
-    env_file:
-      - .env.spark
-    volumes:
-      - ${AIRFLOW_PROJ_DIR:-.}/spark-events:/opt/spark/spark-events
-    ports:
-      - '18080:18080'
+  # spark-history:
+  #   image: spark-image
+  #   entrypoint: ['./entrypoint.sh', 'history']
+  #   depends_on:
+  #     - spark-master
+  #   env_file:
+  #     - .env.spark
+  #   volumes:
+  #     - ${AIRFLOW_PROJ_DIR:-.}/spark-events:/opt/spark/spark-events
+  #   ports:
+  #     - '18080:18080'
 
-  spark-worker:
-    image: spark-image
-    entrypoint: ['./entrypoint.sh', 'worker']
-    volumes:
-      - ./pyspark:/opt/spark/pyspark
-      - ${AIRFLOW_PROJ_DIR:-.}/spark-events:/opt/spark/spark-events
-    env_file:
-      - .env.spark
+  # spark-worker:
+  #   image: spark-image
+  #   entrypoint: ['./entrypoint.sh', 'worker']
+  #   volumes:
+  #     - ./pyspark:/opt/spark/pyspark
+  #     - ${AIRFLOW_PROJ_DIR:-.}/spark-events:/opt/spark/spark-events
+  #   env_file:
+  #     - .env.spark
   
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-
-
-  kafka:
-    image: confluentinc/cp-kafka:7.5.0
-    depends_on:
-      - zookeeper
-    ports:
-      - "9092:9092"
-      - "29092:29092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-    volumes:
-      - kafka-data:/var/lib/kafka/data
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    ports:
-      - "8081:8080"
-    environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
-
 volumes:
   postgres-db-volume:
   spark-logs:
-  kafka-data:

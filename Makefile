@@ -27,3 +27,6 @@ spark-sql:
 
 notebook:
 	docker compose exec spark-master bash -c "jupyter notebook --ip=0.0.0.0 --port=3000 --allow-root"
+
+kafka-up:
+	docker compose -f docker-compose.kafka.yml up -d
