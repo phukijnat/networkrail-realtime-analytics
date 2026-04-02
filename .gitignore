@@ -195,6 +195,8 @@ data/
 # DEB dataengineercafe keyfiles
 deb-*.json
 
+# CSV
+*.csv
 
 #Copilot
 .copilotignore
@@ -202,8 +204,9 @@ deb-*.json
 # Parquet
 .parquet
 
+# Kafka
+kafka-data/
+
 # DBT Packages
 package-lock.yml
-
-# Extracted greenery data
-/extracted_data
+networkrail_producer/networkrail.conf
