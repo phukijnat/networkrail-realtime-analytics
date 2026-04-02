@@ -210,3 +210,6 @@ kafka-data/
 # DBT Packages
 package-lock.yml
 networkrail_producer/networkrail.conf
+
+poetry.lock
+networkrail_producer/poetry.lock
