@@ -213,3 +213,4 @@ networkrail_producer/networkrail.conf
 
 poetry.lock
 networkrail_producer/poetry.lock
+dbt/networkrail/.user.yml
