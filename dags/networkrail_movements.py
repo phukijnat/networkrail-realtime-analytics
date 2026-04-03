@@ -8,7 +8,7 @@ from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOpe
 from airflow.utils import timezone
 
 
-BUSINESS_DOMAIN = "networkrail"
+BUSINESS_DOMAIN = "networkrail_data"
 DATA = "movements"
 LOCATION = "asia-southeast1"
 GCP_PROJECT_ID = "dataengineer-bootcamp"
@@ -57,7 +57,7 @@ with DAG(
     default_args=default_args,
     schedule="@hourly",  # Set the schedule here
     catchup=False,
-    tags=["DEB", "Skooldio", "networkrail"],
+    tags=["pipeline", "networkrail"],
     max_active_runs=3,
 ):
 
