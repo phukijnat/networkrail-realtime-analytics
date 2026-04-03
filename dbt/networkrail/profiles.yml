@@ -8,5 +8,5 @@ networkrail:
       project: dataengineer-bootcamp
       dataset: dbt_networkrail
       threads: 1
-      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS_FOR_BIGQUERY') }}"
       location: asia-southeast1
