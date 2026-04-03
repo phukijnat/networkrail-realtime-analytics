@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: networkrail_data
+  - name: networkrail
     schema: networkrail_data
     database: dataengineer-bootcamp
 
