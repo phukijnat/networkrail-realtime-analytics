@@ -1,0 +1,12 @@
+networkrail:
+  target: dbt_networkrail
+
+  outputs:
+    dbt_networkrail:
+      type: bigquery
+      method: service-account
+      project: dataengineer-bootcamp
+      dataset: dbt_networkrail
+      threads: 1
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"
+      location: asia-southeast1
