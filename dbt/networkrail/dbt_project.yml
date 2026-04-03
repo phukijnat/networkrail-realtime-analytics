@@ -33,12 +33,8 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   networkrail:
     staging:
-      networkrail:
-        +materialized: view
-        +schema: staging
-    intermediate:
       +materialized: view
-      +schema: intermediate
+      +schema: staging
     marts:
       +materialized: view
       +schema: reporting
