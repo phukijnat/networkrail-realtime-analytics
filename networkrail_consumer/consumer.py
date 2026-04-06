@@ -3,7 +3,7 @@ import json
 from collections import defaultdict
 from datetime import datetime
 import os
-from time import time
+from time import time, timezone
 from uuid import uuid4
 
 from google.cloud import storage
@@ -11,18 +11,13 @@ from google.oauth2 import service_account
 from kafka import KafkaConsumer 
 
 
-parser = configparser.ConfigParser()
-parser.read("confluent.conf")
 
-confluent_bootstrap_servers = parser.get("config", "confluent_bootstrap_servers")
-confluent_key = parser.get("config", "confluent_key")
-confluent_secret = parser.get("config", "confluent_secret")
 
 GCP_PROJECT_ID = "dataengineer-bootcamp"
 BUCKET_NAME = "deb-bootcamp-37"
 BUSINESS_DOMAIN = "networkrail"
 DESTINATION_FOLDER = f"{BUSINESS_DOMAIN}/raw"
-KEYFILE_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+KEYFILE_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_FOR_GCS")
 TOPIC = "networkrail-train-movements"
 CONSUMER_GROUP = "phukijnat-networkrail"
 
@@ -59,17 +54,15 @@ def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
 def get_event_partitions(record: dict) -> tuple[str, str]:
     event_ts = record.get("actual_timestamp") or record.get("planned_timestamp")
 
-    if isinstance(event_ts, str):
+    if isinstance(event_ts, str) and event_ts and event_ts != "None":
         try:
-            normalized = event_ts.replace("Z", "+00:00")
-            event_dt = datetime.fromisoformat(normalized)
+            event_dt = datetime.fromisoformat(event_ts.replace("Z", "+00:00")).astimezone(timezone.utc)
             return event_dt.strftime("dt=%Y-%m-%d"), event_dt.strftime("hour=%H")
         except ValueError:
             pass
 
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     return now.strftime("dt=%Y-%m-%d"), now.strftime("hour=%H")
-
 
 def flush_batch(batch: list[dict]):
     if not batch:
