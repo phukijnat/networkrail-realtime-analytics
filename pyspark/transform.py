@@ -3,6 +3,8 @@ import argparse
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import input_file_name, regexp_extract
 from pyspark.sql.types import StructField, StructType, StringType, TimestampType
+from pyspark.sql.utils import AnalysisException
+
 
 
 BUCKET_NAME = "deb-bootcamp-37"
@@ -32,6 +34,7 @@ spark = SparkSession.builder.appName("networkrail_transform") \
     .getOrCreate()
 
 spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+spark.conf.set("spark.sql.session.timeZone", "UTC")
 
 struct_schema = StructType([
     StructField("actual_timestamp", TimestampType()),
@@ -68,13 +71,21 @@ struct_schema = StructType([
 GCS_FILE_PATH = f"gs://{BUCKET_NAME}/{SOURCE_FOLDER}/dt={PROCESS_DATE}/hour={PROCESS_HOUR}/*.json"
 
 
-df = spark.read \
-    .schema(struct_schema) \
-    .json(GCS_FILE_PATH)
+try:
+    df = spark.read.schema(struct_schema).json(GCS_FILE_PATH)
+except AnalysisException:
+    print(f"Path not found: {GCS_FILE_PATH}, skipping.")
+    spark.stop()
+    exit(0)
+
+if df.rdd.isEmpty():
+    print(f"No data found for {GCS_FILE_PATH}, skipping.")
+    spark.stop()
+    exit(0)
 
 df = df.withColumn("source_file", input_file_name())
-df = df.withColumn("dt", regexp_extract("source_file", r"dt=(\\d{4}-\\d{2}-\\d{2})", 1))
-df = df.withColumn("hour", regexp_extract("source_file", r"hour=(\\d{2})", 1))
+df = df.withColumn("dt", regexp_extract("source_file", r"dt=(\d{4}-\d{2}-\d{2})", 1))
+df = df.withColumn("hour", regexp_extract("source_file", r"hour=(\d{2})", 1))
 
 df.show()
 df.printSchema()
@@ -90,4 +101,4 @@ result = spark.sql("""
 result = result.drop("source_file")
 
 OUTPUT_PATH = f"gs://{BUCKET_NAME}/{DESTINATION_FOLDER}"
-result.write.mode("overwrite").partitionBy("dt", "hour", "toc_id").parquet(OUTPUT_PATH)
+result.write.mode("overwrite").partitionBy("dt", "hour").parquet(OUTPUT_PATH)
