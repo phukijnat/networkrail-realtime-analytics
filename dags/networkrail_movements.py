@@ -2,54 +2,83 @@ import logging
 
 from airflow import DAG
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator, ShortCircuitOperator
 from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from airflow.utils import timezone
 
 
-BUSINESS_DOMAIN = "networkrail_data"
+BUSINESS_DOMAIN = "networkrail"
 DATA = "movements"
 LOCATION = "asia-southeast1"
 GCP_PROJECT_ID = "dataengineer-bootcamp"
 GCS_BUCKET = "deb-bootcamp-37"
-BIGQUERY_DATASET = "networkrail"
+BIGQUERY_DATASET = "networkrail_data"
+
+
+def _check_processed_files(data_interval_start, **context):
+    ds = data_interval_start.to_date_string()
+    hour = data_interval_start.strftime("%H")
+    prefix = f"{BUSINESS_DOMAIN}/processed/dt={ds}/hour={hour}/"
+
+    hook = GCSHook(gcp_conn_id="load_data_to_gcs")
+    blobs = hook.list(GCS_BUCKET, prefix=prefix, max_results=1)
+
+    if not blobs:
+        logging.info("No processed files found at %s, skipping downstream.", prefix)
+    return bool(blobs)
 
 
 def _load_data_from_gcs_to_bigquery(data_interval_start, **context):
     ds = data_interval_start.to_date_string()
     hour = data_interval_start.strftime("%H")
 
-    hook = BigQueryHook(gcp_conn_id="load_data_to_gcs", location=LOCATION)
+    hook = BigQueryHook(gcp_conn_id="load_data_to_bigquery", location=LOCATION)
+    hook.create_empty_dataset(
+        project_id=GCP_PROJECT_ID,
+        dataset_id=BIGQUERY_DATASET,
+        location=LOCATION,
+        exists_ok=True,
+    )
 
     bucket_name = GCS_BUCKET
-    destination_blob_name = f"{BUSINESS_DOMAIN}/processed/dt={ds}/hour={hour}/*/*.parquet"
+    destination_blob_name = f"{BUSINESS_DOMAIN}/processed/dt={ds}/hour={hour}/*.parquet"
     source_uri = f"gs://{bucket_name}/{destination_blob_name}"
 
-    configuration = {
+    partition_id = f"{ds.replace('-', '')}{hour}"
+    job_config = {
         "load": {
-            "sourceUris": [source_uri],
             "destinationTable": {
                 "projectId": GCP_PROJECT_ID,
                 "datasetId": BIGQUERY_DATASET,
-                "tableId": DATA,
+                "tableId": f"{DATA}${partition_id}",
+            },
+            "timePartitioning": {
+                "type": "HOUR",
+                "field": "actual_timestamp",
             },
             "sourceFormat": "PARQUET",
-            "writeDisposition": "WRITE_APPEND",
+            "writeDisposition": "WRITE_TRUNCATE",
+            "sourceUris": [source_uri],
             "autodetect": True,
         }
     }
 
     job = hook.insert_job(
-        configuration=configuration,
+        configuration=job_config,
         project_id=GCP_PROJECT_ID,
         location=LOCATION,
     )
     job.result()
-    logging.info("Loaded parquet files from %s into %s.%s.%s", source_uri, GCP_PROJECT_ID, BIGQUERY_DATASET, DATA)
+    job_stats = job._properties.get("statistics", {}).get("load", {})
+    logging.info("Loaded %s rows from %s files | source: %s | destination: %s.%s.%s",
+                job_stats.get("outputRows", "?"),
+                job_stats.get("inputFiles", "?"),
+                source_uri, GCP_PROJECT_ID, BIGQUERY_DATASET, DATA)
 
 default_args = {
-    "owner": "Skooldio",
+    "owner": "phukijnat",
     "start_date": timezone.datetime(2024, 8, 25),
 }
 with DAG(
@@ -77,6 +106,12 @@ with DAG(
         ],
         )
 
+    # Check if processed files exist in GCS
+    check_processed_files = ShortCircuitOperator(
+        task_id="check_processed_files",
+        python_callable=_check_processed_files,
+    )
+
     # Load data from GCS to BigQuery
     load_data_from_gcs_to_bigquery = PythonOperator(
         task_id="load_data_from_gcs_to_bigquery",
@@ -86,4 +121,4 @@ with DAG(
     end = EmptyOperator(task_id="end", trigger_rule="one_success")
 
     # Task dependencies
-    start >> transform_data >> load_data_from_gcs_to_bigquery >> end
+    start >> transform_data >> check_processed_files >> load_data_from_gcs_to_bigquery >> end
