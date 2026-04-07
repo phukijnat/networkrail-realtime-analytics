@@ -8,7 +8,7 @@ profile_config = ProfileConfig(
     profile_name="networkrail",
     target_name="dev",
     profile_mapping=GoogleCloudServiceAccountDictProfileMapping(
-        conn_id="networkrail_dbt_bigquery_conn",
+        conn_id="load_data_to_bigquery",
         profile_args={
             "schema": "dbt_networkrail",
             "location": "asia-southeast1",
