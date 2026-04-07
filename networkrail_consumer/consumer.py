@@ -19,7 +19,7 @@ BUSINESS_DOMAIN = "networkrail"
 DESTINATION_FOLDER = f"{BUSINESS_DOMAIN}/raw"
 KEYFILE_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_FOR_GCS")
 TOPIC = "networkrail-train-movements"
-CONSUMER_GROUP = "phukijnat-networkrail"
+CONSUMER_GROUP = "phukijnat-networkrail-UCT"
 
 BATCH_SIZE = 1000         # flush เมื่อครบ 1000 records
 BATCH_INTERVAL_SECS = 60  # flush ทุก 60 วินาที 
