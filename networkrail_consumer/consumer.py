@@ -1,9 +1,9 @@
 import configparser
 import json
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 import os
-from time import time, timezone
+from time import time
 from uuid import uuid4
 
 from google.cloud import storage
@@ -19,7 +19,7 @@ BUSINESS_DOMAIN = "networkrail"
 DESTINATION_FOLDER = f"{BUSINESS_DOMAIN}/raw"
 KEYFILE_PATH = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_FOR_GCS")
 TOPIC = "networkrail-train-movements"
-CONSUMER_GROUP = "phukijnat-networkrail-UCT"
+CONSUMER_GROUP = "phukijnat-networkrail-UTC"
 
 BATCH_SIZE = 1000         # flush เมื่อครบ 1000 records
 BATCH_INTERVAL_SECS = 60  # flush ทุก 60 วินาที 
@@ -56,7 +56,11 @@ def get_event_partitions(record: dict) -> tuple[str, str]:
 
     if isinstance(event_ts, str) and event_ts and event_ts != "None":
         try:
-            event_dt = datetime.fromisoformat(event_ts.replace("Z", "+00:00")).astimezone(timezone.utc)
+            event_dt = datetime.fromisoformat(event_ts.replace("Z", "+00:00"))
+            if event_dt.tzinfo is None:
+                event_dt = event_dt.replace(tzinfo=timezone.utc)
+            else:
+                event_dt = event_dt.astimezone(timezone.utc)
             return event_dt.strftime("dt=%Y-%m-%d"), event_dt.strftime("hour=%H")
         except ValueError:
             pass
