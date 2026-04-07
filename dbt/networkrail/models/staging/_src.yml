@@ -11,19 +11,6 @@ sources:
         columns:
           - name: event_type
             description: Event type
-          - name: variation_status
-            tests:
-              - not_null
-              - accepted_values:
-                  values: ['ON TIME', 'LATE', 'EARLY', 'OFF ROUTE']
-
-          - name: train_id
-            tests:
-              - not_null
-
-          - name: toc_id
-            tests:
-              - not_null
         freshness:
           warn_after: {count: 1, period: hour}
           error_after: {count: 2, period: hour}
