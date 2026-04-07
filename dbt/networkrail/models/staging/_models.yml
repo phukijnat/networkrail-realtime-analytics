@@ -20,3 +20,30 @@ models:
           - dbt_expectations.expect_column_to_exist
           - dbt_expectations.expect_column_values_to_be_of_type:
               column_type: timestamp
+      - name: variation_status
+        description: Train variation status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['ON TIME', 'LATE', 'EARLY', 'OFF ROUTE']
+      - name: train_id
+        description: Train identifier
+        tests:
+          - not_null
+      - name: toc_id
+        description: Train operating company identifier
+        tests:
+          - not_null
+
+  - name: stg_networkrail__operating_companies
+    description: Staging model for operating companies seed data
+    columns:
+      - name: toc_id
+        description: Train operating company identifier
+        tests:
+          - not_null
+          - unique
+      - name: company_name
+        description: Operating company name
+        tests:
+          - not_null
