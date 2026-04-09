@@ -13,7 +13,7 @@ select
 
 from fct_movements
 where
-    variation_status = 'ON TIME'
+    variation_status = 'LATE'
     and date(actual_timestamp_utc) >= date_add(current_date(), interval -3 day)
 group by 1, 2
 order by 3 desc
