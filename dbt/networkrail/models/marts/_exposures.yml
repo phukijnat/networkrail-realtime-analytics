@@ -1,0 +1,16 @@
+version: 2
+
+exposures:
+
+  - name: networkrail_train_movement_data
+    label: Network Rail Train Movement Data
+    type: dashboard
+    maturity: high
+    url: https://lookerstudio.google.com/u/0/reporting/5895bb87-0585-4955-92c1-5bdf9a6744ab/page/leZuF  
+
+    depends_on:
+      - ref('fct_movements')
+
+    owner:
+      name: Phukijnat  
+      email: phukijnat.mek@gmail.com  
