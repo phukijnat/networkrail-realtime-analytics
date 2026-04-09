@@ -2,15 +2,41 @@ version: 2
 
 exposures:
 
-  - name: networkrail_train_movement_data
-    label: Network Rail Train Movement Data
+  - name: networkrail_train_movement_overview
+    label: Network Rail Movement Dashboard
     type: dashboard
     maturity: high
-    url: https://lookerstudio.google.com/u/0/reporting/5895bb87-0585-4955-92c1-5bdf9a6744ab/page/leZuF  
+    url: https://lookerstudio.google.com/s/v5RV3iBDi6E
+    description: >
+      Overview dashboard showing total movement records, variation status over time
+      (ON TIME / LATE / EARLY / OFF ROUTE), event source/type breakdown,
+      and per-company punctuality metrics. Powered by fct_movements.
 
     depends_on:
       - ref('fct_movements')
 
     owner:
-      name: Phukijnat  
-      email: phukijnat.mek@gmail.com  
+      name: Phukijnat
+      email: phukijnat.mek@gmail.com
+
+  - name: networkrail_business_questions
+    label: Network Rail Questions Dashboard
+    type: dashboard
+    maturity: high
+    url: https://lookerstudio.google.com/s/udRqPbE34OA
+    description: >
+      Business questions dashboard answering: which train has the most off-route records,
+      which operating company has the most on-time/late trains in the last 3 days,
+      which hour of each day has the most late trains, and which trains have never been
+      late or off route.
+
+    depends_on:
+      - ref('train_with_highest_number_of_off_route_records')
+      - ref('operating_company_that_has_highest_number_of_on_time_trains')
+      - ref('operating_company_that_has_highest_number_of_late_trains')
+      - ref('hours_of_each_day_with_highest_number_of_late_trains')
+      - ref('trains_that_have_never_been_late_or_off_route')
+
+    owner:
+      name: Phukijnat
+      email: phukijnat.mek@gmail.com
