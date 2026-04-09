@@ -1,0 +1,103 @@
+<svg width="900" height="410" viewBox="0 0 900 410" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M2 2L8 5L2 8" fill="none" stroke="#aac8e8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrow-yellow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M2 2L8 5L2 8" fill="none" stroke="#f5c518" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <linearGradient id="grad-source" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e4d8c"/>
+      <stop offset="100%" stop-color="#0d2f60"/>
+    </linearGradient>
+    <linearGradient id="grad-kafka" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4a2563"/>
+      <stop offset="100%" stop-color="#2b1040"/>
+    </linearGradient>
+    <linearGradient id="grad-card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e5080"/>
+      <stop offset="100%" stop-color="#0f3560"/>
+    </linearGradient>
+    <linearGradient id="grad-teal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a5470"/>
+      <stop offset="100%" stop-color="#0e3a52"/>
+    </linearGradient>
+    <linearGradient id="grad-looker" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e6b6b"/>
+      <stop offset="100%" stop-color="#074040"/>
+    </linearGradient>
+  </defs>
+
+  <!--
+    Layout (left→right): Source(90) + gap(20) + Consumer(90) + gap(20) + border(388) + gap(20) + Looker(90)
+    Total = 718px, margin = (900-718)/2 = 91
+  -->
+  <g transform="translate(91, 0)">
+
+    <!-- SOURCE SYSTEMS (outside the dashed border) -->
+    <rect x="0" y="32" width="90" height="268" rx="14" fill="url(#grad-source)"/>
+    <text x="45" y="148" text-anchor="middle" font-size="15" font-weight="700" fill="white">Source</text>
+    <text x="45" y="166" text-anchor="middle" font-size="15" font-weight="700" fill="white">Systems</text>
+    <text x="45" y="198" text-anchor="middle" font-size="11" fill="#a0c0e8">Database</text>
+    <text x="45" y="215" text-anchor="middle" font-size="11" fill="#a0c0e8">APIs · · ·</text>
+
+    <!-- Arrow: Source → Consumer -->
+    <line x1="90" y1="166" x2="109" y2="166" stroke="#aac8e8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- CONSUMER / KAFKA (outside the dashed border) -->
+    <rect x="110" y="32" width="90" height="268" rx="14" fill="url(#grad-kafka)"/>
+    <text x="155" y="155" text-anchor="middle" font-size="15" font-weight="700" fill="white">Consumer</text>
+    <text x="155" y="198" text-anchor="middle" font-size="11" fill="#c8a0e8">Apache Kafka</text>
+
+    <!-- Arrow: Consumer → Border (Data Lake) -->
+    <line x1="200" y1="101" x2="219" y2="101" stroke="#aac8e8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- Outer dashed red border: x=220 y=12 w=388 h=308 -->
+    <rect x="220" y="12" width="388" height="308" rx="16" fill="none" stroke="#e85555" stroke-width="2" stroke-dasharray="10 5"/>
+
+    <!-- DATA LAKE -->
+    <rect x="232" y="32" width="170" height="138" rx="14" fill="url(#grad-card)"/>
+    <text x="317" y="94" text-anchor="middle" font-size="15" font-weight="700" fill="white">Data Lake</text>
+    <text x="317" y="116" text-anchor="middle" font-size="12" fill="#a0c0e8">Google Cloud Storage</text>
+
+    <!-- DATA PROCESSING -->
+    <rect x="232" y="192" width="170" height="108" rx="14" fill="url(#grad-teal)"/>
+    <text x="317" y="247" text-anchor="middle" font-size="15" font-weight="700" fill="white">Data Processing</text>
+    <text x="317" y="268" text-anchor="middle" font-size="12" fill="#a0c0e8">Apache Spark</text>
+
+    <!-- Yellow dashed arrows: Data Lake ↔ Data Processing -->
+    <path d="M 272 170 C 258 180 258 192 272 202" fill="none" stroke="#f5c518" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-yellow)"/>
+    <path d="M 362 202 C 376 192 376 180 362 170" fill="none" stroke="#f5c518" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-yellow)"/>
+
+    <!-- Arrow: Data Lake → Data Warehouse -->
+    <line x1="402" y1="101" x2="419" y2="101" stroke="#aac8e8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- DATA WAREHOUSE -->
+    <rect x="420" y="32" width="170" height="138" rx="14" fill="url(#grad-card)"/>
+    <text x="505" y="94" text-anchor="middle" font-size="15" font-weight="700" fill="white">Data Warehouse</text>
+    <text x="505" y="116" text-anchor="middle" font-size="12" fill="#a0c0e8">Google BigQuery</text>
+
+    <!-- ANALYTICS -->
+    <rect x="420" y="192" width="170" height="108" rx="14" fill="url(#grad-teal)"/>
+    <text x="505" y="247" text-anchor="middle" font-size="15" font-weight="700" fill="white">Analytics</text>
+    <text x="505" y="268" text-anchor="middle" font-size="12" fill="#a0c0e8">dbt</text>
+
+    <!-- Yellow dashed arrows: Data Warehouse ↔ Analytics -->
+    <path d="M 460 170 C 446 180 446 192 460 202" fill="none" stroke="#f5c518" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-yellow)"/>
+    <path d="M 550 202 C 564 192 564 180 550 170" fill="none" stroke="#f5c518" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-yellow)"/>
+
+    <!-- Arrow: Data Warehouse → Looker (exits border) -->
+    <line x1="590" y1="101" x2="627" y2="101" stroke="#aac8e8" stroke-width="2" marker-end="url(#arrow)"/>
+
+    <!-- LOOKER (outside the dashed border) -->
+    <rect x="628" y="32" width="90" height="268" rx="14" fill="url(#grad-looker)"/>
+    <text x="673" y="162" text-anchor="middle" font-size="15" font-weight="700" fill="white">Report</text>
+    <text x="673" y="198" text-anchor="middle" font-size="11" fill="#d8b8f8">Looker</text>
+
+    <!-- WORKFLOW ORCHESTRATOR: centered under border (border center x = 220+194 = 414) -->
+    <rect x="299" y="342" width="230" height="52" rx="16" fill="none" stroke="#e07030" stroke-width="2"/>
+    <text x="414" y="362" text-anchor="middle" font-size="13" font-weight="700" fill="#4ab8c8">Workflow Orchestrator</text>
+    <text x="414" y="382" text-anchor="middle" font-size="12" fill="#a0c0e8">Apache Airflow</text>
+
+  </g>
+</svg>
