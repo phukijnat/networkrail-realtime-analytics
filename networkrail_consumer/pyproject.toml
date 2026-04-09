@@ -2,7 +2,7 @@
 name = "networkrail-consumer"
 version = "0.1.0"
 description = ""
-authors = ["zkan <zkan.cs@gmail.com>"]
+authors = ["phukijnat <phukijnat.mek@gmail.com>"]
 readme = "README.md"
 package-mode = false
 
